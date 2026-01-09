@@ -35,8 +35,6 @@ alter table events
 
 
 
-
-
 create table collaborators
 (
     id_collaborators int primary key generated always as identity,
@@ -292,25 +290,41 @@ truncate table artist_event cascade;
 insert into artist_event (id_artist, id_event)
 values
     -- Artist 1: Very busy (6 events)
-    (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6),
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (1, 4),
+    (1, 5),
+    (1, 6),
     -- Artist 2: Busy (4 events)
-    (2, 1), (2, 2), (2, 7), (2, 8),
+    (2, 1),
+    (2, 2),
+    (2, 7),
+    (2, 8),
     -- Artist 3: Moderate (3 events)
-    (3, 3), (3, 4), (3, 9),
+    (3, 3),
+    (3, 4),
+    (3, 9),
     -- Artist 4: Only 1 event
     (4, 10),
     -- ARTIST 5: SKIPPED (0 events)
 
     -- Artist 6: Shared events (3 events)
-    (6, 1), (6, 2), (6, 3),
+    (6, 1),
+    (6, 2),
+    (6, 3),
     -- Artist 7: (2 events)
-    (7, 7), (7, 10),
+    (7, 7),
+    (7, 10),
     -- ARTIST 8: SKIPPED (0 events)
 
     -- Artist 9: (3 events)
-    (9, 9), (9, 1), (9, 2),
+    (9, 9),
+    (9, 1),
+    (9, 2),
     -- Artist 10: (2 events)
-    (10, 10), (10, 5)
+    (10, 10),
+    (10, 5)
 on conflict (id_artist, id_event) do nothing;
 
 -- Inserts to bring ARTIST_GROUP to 10 total
@@ -397,13 +411,49 @@ values (1, 1, '2025-11-27 15:30:00'),
 
 
 
+join artist.name
+    count(event.id_event)
+from artist
+
+
+
+
+/*
+
+Here is the logical path your query needs to follow:
+rooms -> events (via id_room) -> artist_event (via id_event) -> artist (via id_artist).
+*/
+
+
+/*
+select artist.name,
+       count(events.id_event)
+from artist
+    join artist_event on artist.id_artist = artist_event.id_artist
+group by artist.name, rooms.name
+order by count(rooms.id_room);
+*/
+
 select artist.name, count(events.id_event)
 from artist
-        join artist_event on artist.id_artist = artist_event.id_artist
-        join events on artist_event.id_event = events.id_event
+         join artist_event on artist.id_artist = artist_event.id_artist
+         join events on artist_event.id_event = events.id_event
 group by artist.name, events.name_event
 order by count(events.id_event) desc;
 
+
+-- artists -> artists_event -> events
+
+select r.name as room_name,
+       a.name as artist_name
+from rooms r
+         join events e on r.id_room = e.id_room
+         join artist_event ae on e.id_event = ae.id_event
+         join artist a on ae.id_artist = a.id_artist
+group by r.name, a.name
+order by r.name, a.name;
+
+-- rooms -> events -> artist_event -> artist
 
 
 
@@ -412,6 +462,7 @@ EXPLAIN ANALYZE
 SELECT *
 FROM rooms;
 EXPLAIN ANALYZE
+
 SELECT *
 FROM events;
 rollback;
