@@ -451,6 +451,19 @@ from rooms r
 group by r.name, a.name
 order by r.name, a.name;
 
+
+select events.name_event, count(*) from events
+    left join events_users on events_users.id_event = events.id_event
+group by events.name_event;
+
+
+
+
+
+
+
+
+
 -- rooms -> events -> artist_event -> artist
 
 
