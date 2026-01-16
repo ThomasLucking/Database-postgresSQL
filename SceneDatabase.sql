@@ -411,9 +411,6 @@ values (1, 1, '2025-11-27 15:30:00'),
 
 
 
-join artist.name
-    count(event.id_event)
-from artist
 
 
 
@@ -440,6 +437,7 @@ from artist
          join events on artist_event.id_event = events.id_event
 group by artist.name, events.name_event
 order by count(events.id_event) desc;
+
 
 
 -- artists -> artists_event -> events
